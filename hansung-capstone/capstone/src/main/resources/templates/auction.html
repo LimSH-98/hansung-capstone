@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header" />
+<head>
+    <title>Hello</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<div>
+    <img src=/image/background.png alt="" width="200" height="200">
+</div>
+<form action="insert_item.jsp" method="post">
+<!-- 카테고리 -->
+<!-- 올린 시간 -->
+<!-- 좋아요 수 -->
+<!-- 조회 수 -->
+<!-- 판매자 아이디 -->
+<!-- 사진 -->
+<!-- 상품 설명 -->
+<!-- 판매자의 다른 상품 -->
+낙찰상태 : <p id="status">낙찰 중</p>
+시작가 : <p id="startBid">8000</p>
+입찰단위 : <p id="unit">1000</p>
+최고가 : <p id="winningBid">12000</p>
+<!-- 즉시 구매가 -->
+<!-- 낙찰 성공 -> 다른 여려 명의 유저들과의 경매 입찰에서 먼저 입찰할 경우
+     그리고 최고가로 낙찰 성공 시 판매자와 채팅방 생성성 -->
+
+    <input type="button" onclick="updown()" value="낙찰">
+</form>
+<script>
+    function updown(){
+        const startBid = document.getElementById("startBid");
+        let flag = 0;
+        let price = startBid.innerText;
+        price = parseInt(price);
+        let unit = document.getElementById("unit").innerText;
+        let winningBid = document.getElementById("winningBid").innerText;
+        winningBid = parseInt(winningBid);
+        let status = document.getElementById("status");
+
+        if(!confirm("낙찰 하시겠습니까?")){
+            alert("낙찰에 취소하셨습니다.");
+        }
+        else if(flag == 0){
+           if(price == winningBid){
+                flag = 1;
+                alert("최고가에 낙찰하였습니다. 낙찰이 종료됩니다.");
+                status.innerText="낙찰 완료";
+            }
+            else if(price < winningBid){
+                alert("낙찰에 성공하셨습니다.");
+                startBid.innerText = parseInt(price) + parseInt(unit);
+            }
+        }
+        else if(flag == 1){
+            alert("이미 경매가 종료되었습니다.");
+        }
+    }
+</script>
+
+
+</body>
+</html>
