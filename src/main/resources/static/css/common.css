@@ -1,0 +1,103 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Do Hyeon", sans-serif;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+body {
+  margin-top: 100px;
+  font-size:1.0rem;
+}
+
+button {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-color: transparent;
+}
+
+#iconimg {
+  margin: 0 10px;
+  width: 40px;
+  height: auto;
+}
+.top-bar {
+  padding: 40px;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  left: 0;
+  top: 0;
+  background-color: white;
+  display: flex;
+  width: 100%;
+  height: 100px;
+  padding: 5px;
+  z-index: 1;
+}
+.title {
+  font-size: 45px;
+  font-weight: bold;
+  font-style: italic;
+}
+.title a:hover{
+  text-decoration: none;
+  color: black;
+}
+
+.btn_gotop {
+  display:none;
+  position:fixed;
+  bottom:30px;
+  right:30px;
+  z-index:999;
+  border:1px solid #ccc;
+  outline:none;
+  background-color:#fca863;
+  color:#333;
+  cursor:pointer;
+  padding:15px 20px;
+  border-radius:100%;
+}
+.footer{
+  height:150px;
+  padding: 20px;
+  background:#fca863;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.footer_img{
+  margin-left: 30px;
+  height: 80px;
+  width: auto;
+}
+.team-box{
+  margin-left: 100px;
+  width: 250px;
+  height: 80px;
+  overflow: hidden;
+}
+.link-box{
+  margin-left: 100px;
+  width: 400px;
+  height: 80px;
+}
+.link-box a{
+  color: #5c5c5c;
+}
+.link-box a:hover {
+  text-decoration: underline;
+}
+
+input[type='file'] {
+  color: transparent;
+}

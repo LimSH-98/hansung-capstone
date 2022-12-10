@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>도전경매 - 경매글 작성</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrinkto-fit=no"
+    />
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="/css/bootstrap.min.css"
+      integrity="sha384-
+ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <!-- Custom styles for this template -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
+      rel="stylesheet"
+    />
+    <link href="/css/jumbotron-narrow.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="../css/common.css" />
+    <link rel="stylesheet" type="text/css" href="../css/createPostForm.css" />
+    <title>경매</title>
+  </head>
+  <body>
+    <div class="container" style="border: 3px solid; padding: 30px; border-radius:10px;border-color: #fca863">
+      <div class="top-bar">
+        <div class="title">
+          <a href="/"
+            ><img
+              src="../images/premium-icon-hammer-2547559.png"
+              id="iconimg"
+            />도전경매</a
+          >
+        </div>
+      </div>
+      <form
+        class="post-form"
+        th:action="@{/posts/new}"
+        th:object="${form}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div class="form-group">
+
+          <div>카테고리</div>
+          <select
+            th:field="*{category}"
+            class="form-control"
+            th:name="category"
+            id="category"
+            onchange="handleOnChange(this)"
+          >
+            <option th:selected="selected" th:value="book">도서</option>
+            <option th:value="studyMaterial">학습자료</option>
+            <option th:value="electronics">전자기기</option>
+            <option th:value="daily">생필품</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div th:for="name">제목</div>
+          <input
+            type="text"
+            th:field="*{title}"
+            id="title"
+            class="form-control"
+            placeholder="제목을 입력하세요"
+          />
+        </div>
+        <div class="form-group">
+          <div>상품 사진</div>
+          <input type="file" name="files" accept=".gif, .jpg, .jpeg, .png"
+                 id="img" class="form-control" onchange="checkFile(this)" style="border: none;">
+          <!-- 여기서 files는 controller에 @RequestPart MultipartFile files -->
+
+        </div>
+        <div class="form-group" id="content">
+          <div th:for="price">내용</div>
+          <textarea
+            id="contents"
+            th:field="*{contents}"
+            maxlength="255"
+            rows="5"
+            class="form-control"
+            placeholder="내용을 입력하세요"
+          />
+        </div>
+        <div class="form-group">
+          <div th:for="price">상품명</div>
+          <input
+            type="text"
+            id="name"
+            th:field="*{productName}"
+            class="form-control"
+            placeholder="상품명을 입력하세요"
+          />
+        </div>
+        <div class="form-group">
+          <div th:for="price">시작가</div>
+          <input
+            type="text"
+            id="startBid"
+            th:field="*{startBid}"
+            class="form-control"
+            placeholder="시작 가격을 입력하세요"
+          />
+        </div>
+        <div class="form-group">
+          <div th:for="price">즉시 낙찰가</div>
+          <input
+            type="text"
+            id="winningBid"
+            th:field="*{winningBid}"
+            class="form-control"
+            placeholder="즉시 낙찰가를 입력하세요"
+          />
+        </div>
+        <div class="form-group">
+          <div th:for="price">입찰 단위</div>
+          <select
+            type="text"
+            id="unitBid"
+            th:field="*{unitBid}"
+            class="form-control"
+            placeholder="입찰 단위을 입력하세요"
+          >
+            <option value="0" disabled selected>=====입찰 단위=====</option>
+            <option th:value="100">100</option>
+            <option th:value="500">500</option>
+            <option th:value="1000">1000</option>
+            <option th:value="5000">5000</option>
+            <option th:value="10000">10000</option>
+            <option th:value="100000">100000</option>
+            <!-- 입찰단위 : 100, 500, 1000, 5000, 10000, 100000-->
+          </select>
+        </div>
+        <div class="form-group">
+          <div th:for="price">경매 기간</div>
+          <select
+            id="auctionPeriod"
+            type="text"
+            th:field="*{auctionPeriod}"
+            class="form-control"
+            placeholder="기간을 입력하세요"
+          >
+            <option value="0" disabled selected>=====경매 기간=====</option>
+            <option th:value="24">1일</option>
+            <option th:value="48">2일</option>
+            <option th:value="72">3일</option>
+          </select>
+        </div>
+        <div class="form-group" style="display: none">
+          <div th:for="price">사용자 아이디</div>
+          <input
+            type="text"
+            th:field="*{postUserName}"
+            class="form-control"
+            placeholder="기간을 입력하세요"
+          />
+        </div>
+
+        <!--<div class="form-group">
+            <label th:for="price">상품 상태</label>
+            <input type="text" th:field="*{status}" class="form-control" placeholder="가격을 입력하세요">
+        </div> -->
+        <!--        <div class="form-group">-->
+        <!--            <label th:for="price">조회수</label>-->
+        <!--            <input type="text" th:field="*{view}" class="form-control" placeholder="가격을 입력하세요">-->
+        <!--        </div>-->
+      </form>
+      <br />
+      <button onclick="submit()" class="btn btn-primary submit-btn" style="width : 100%; height: 60px; border-color:white; background-color: #fca863">등록</button>
+    </div>
+  </body>
+  <script>
+    //유효성검사
+    let title = document.getElementById('title');
+    let img = document.getElementById('img');
+    let contents = document.getElementById('contents');
+    let name = document.getElementById('name');
+    let startBid = document.getElementById('startBid');
+    let winningBid = document.getElementById('winningBid');
+    let unitBid = document.getElementById('unitBid');
+    let auctionPeriod = document.getElementById('auctionPeriod');
+
+    function checkFile(f){
+
+      // files 로 해당 파일 정보 얻기.
+      var file = f.files;
+
+      // file[0].name 은 파일명 입니다.
+      // 정규식으로 확장자 체크
+      if(!/\.(gif|jpg|jpeg|png)$/i.test(file[0].name)) alert('gif, jpg, png 파일만 선택해 주세요.\n\n현재 파일 : ' + file[0].name);
+
+      // 체크를 통과했다면 종료.
+      else return;
+
+      // 체크에 걸리면 선택된  내용 취소 처리를 해야함.
+      // 파일선택 폼의 내용은 스크립트로 컨트롤 할 수 없습니다.
+      // 그래서 그냥 새로 폼을 새로 써주는 방식으로 초기화 합니다.
+      // 이렇게 하면 간단 !?
+      f.outerHTML = f.outerHTML;
+    }
+
+      const submit = () => {
+        if(!title.value){
+          alert("제목을 입력하세요");
+        }else if(!contents.value){
+          alert("내용을 입력하세요");
+        }else if(!name.value){
+          alert("상품명을 입력하세요");
+        }else if(!name.value){
+          alert("상품명을 입력하세요");
+        }else if(startBid.value*1>winningBid.value*1){
+          alert("시작가는 즉시낙찰가보다 작거나 같아야합니다.");
+        }else if((winningBid.value*1-startBid.value*1)<unitBid.value*1){
+          alert("입찰단위가 너무 큽니다.");
+        }else if(unitBid.value==0){
+          alert("입찰단위를 선택하세요");
+        }else if(auctionPeriod.value==0){
+          alert("경매기간을 선택하세요");
+        }
+        else{
+          document.querySelector(".post-form").submit();
+        }
+      }
+
+
+      var a =
+        document.getElementById("category").options[
+          document.getElementById("category").selectedIndex
+        ].text;
+      function handleOnChange(e) {
+        // 선택된 데이터의 텍스트값 가져오기
+        const text = e.options[e.selectedIndex].text;
+      }
+    </script>
+</html>

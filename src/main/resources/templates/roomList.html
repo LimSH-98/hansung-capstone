@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>도전경매 - 채팅목록</title>
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link rel="stylesheet" type="text/css" href="/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="/css/room.css" />
+    <link rel="stylesheet" type="text/css" href="/css/chat.css" />
+    <!-- toastr 메시지 스타일, toastr  -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css"
+          integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
+            integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </head>
+  <body>
+    <div th:replace="fragments/bodyHeader :: bodyHeader" />
+
+    <div class="msg-container">
+      <div class="messaging">
+        <div class="inbox_msg">
+          <div class="inbox_people" style="border-right: 3px solid #fca863">
+            <div class="headind_srch" style="background-color: #fca863">
+              <div class="user_header">
+                <h4 style="color: white">채팅 목록</h4></div>
+            </div>
+
+            <div class="inbox_chat">
+              <div th:each="room : ${list}">
+                <div class="chatListBox${room.roomId} chatListBox">
+                  <div
+                    type="button"
+                    class="chatList"
+                    onclick="scroll();"
+                    th:roomId="${room.roomId}"
+                  >
+                    <div class="roomDetails">
+                      <div class="profile">
+                        <div th:if="${room.regisName == session.nickname}">
+                          <h5>[[${room.buyerName}]]님과의 채팅방([[${room.name}]])</h5>
+                        </div>
+                        <div th:if="${room.buyerName == session.nickname}">
+                          <h5>[[${room.regisName}]]님과의 채팅방([[${room.name}]])</h5>
+                        </div>
+                        <div th:each="unRead : ${unReadMsgList}">
+                          <div th:if="${unRead.roomId == room.roomId}">
+                            <div th:if="${unRead.count != 0}">
+                              <h6 th:id="${unRead.roomId}">
+                                새 메시지
+                              </h6>
+                            </div>
+                            <div th:if="${unRead.count == 0}">
+                              <h6 th:id="${unRead.roomId}">
+                                <br>
+                              </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-list">
+            <div class="msg_history" name="contentList">
+              <div id="msgList"></div>
+            </div>
+            <div class="chat-input-box">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script th:inline="javascript">
+
+      var sender = [[${session.nickname}]];
+      var receiver;
+      var roomId;
+
+      toastr.options = {
+	          "closeButton": false,
+			  "debug": false,
+			  "newestOnTop": false,
+			  "progressBar": true,
+			  "positionClass": "toast-top-right",
+			  "preventDuplicates": false,
+			  "onclick": null,
+			  "showDuration": "100",
+			  "hideDuration": "1000",
+			  "timeOut": "10000",
+			  "extendedTimeOut": "1000",
+			  "showEasing": "swing",
+			  "hideEasing": "linear",
+			  "showMethod": "fadeIn",
+			  "hideMethod": "fadeOut"
+     }
+
+      if([[${session.id}]] != null){
+          var socket = new SockJS("/stomp/chat");
+          var stomp = Stomp.over(socket);
+
+          stomp.connect({}, function(){
+
+              console.log("server connected...");
+
+              stomp.subscribe("/sub/chat/room", function(chat){
+                var content = JSON.parse(chat.body);
+                if(document.getElementById(content.chRoomId)){
+                  if(content.chRoomId != roomId){
+                    if(content.senderName != "system"){
+                      document.getElementById(content.chRoomId).innerText = "새 메시지";
+                    }
+                  }
+                  else if(content.chRoomId == roomId){
+                    console.log(content);
+                    var msgDate = sendMsgDate(content.sendTime);
+                    if(content.senderName == sender){
+                      $("#msgList").append("<div class='mychat'><span>" + content.senderName + ": " + content.message + " " + msgDate + "</span></div>");
+                    }
+                    else if(content.senderName == "system"){
+                      $("#msgList").append("<div class='syschat'><div>"+ "system : " + content.message + "</div></div>");
+                    }
+                    else if(content.senderName == receiver){
+                      $("#msgList").append("<div class='notmychat'><span>" + content.senderName + ": " + content.message + " " + msgDate + "</span></div>");
+                    }
+                    scrollBottom();
+                  }
+                else{
+                    msg = content.message.split(" ");
+                    // msg[1]: 입찰한 유저 id
+                    // msg[3]: 이벤트 발생한 게시물 올린 유저 id
+                    // msg[5]: 이벤트 발생한 게시물 id
+                    if(content.chRoomId == "입찰"){ // 입찰자는 입찰 페이지에 있으므로, 경매글 등록자에게만.
+                      if([[${session.id}]] == parseInt(msg[3])){
+                        toastr.info(content.senderName + "님이 " + content.receiverName + "에 입찰하였습니다. ");
+                      }
+                    }
+                    else if(content.chRoomId == "낙찰"){ // 낙찰자는 입찰 페이지에 있으므로, 경매글 등록자에게만.
+                      if([[${session.id}]] == parseInt(msg[3])){
+                        toastr.info(content.senderName + "님이 " + content.receiverName + "을(를) 낙찰하였습니다. <br> 채팅방을 새로고침 해주세요");
+                      }
+                    }
+                    else if(content.chRoomId == "즉구"){ // 구매자는 입찰 페이지에 있으므로, 경매글 등록자에게만.
+                      if([[${session.id}]] == parseInt(msg[3])){
+                        toastr.info(content.senderName + "님이 " + content.receiverName + "을(를) 구매하였습니다. <br> 채팅방을 새로고침 해주세요");
+                      }
+                    }
+                    else if(content.chRoomId == "마감"){ // 마감하는 유저는 입찰 페이지에 있으므로, 현재 입찰자만 메시지.
+                      if([[${session.id}]] == parseInt(msg[3])){
+                        toastr.info(content.senderName + "님이 " + content.receiverName + " 입찰을(를) 종료하였습니다. <br> 채팅방을 새로고침 해주세요");
+                      }
+                    }
+                    else if(document.getElementById(content.chRoomId)){
+                    // 현재 세션의 id가 속한 다른 방으로 가는 메시지는 방에 문자로만 알려준다.
+                      if(roomId != content.chRoomId){
+                        document.getElementById(content.chRoomId).innerText = "새 메시지";
+                      }
+                    }
+                  }
+                }
+              })
+
+              $('.chatList').on('click', function(){
+                  roomId = $(this).attr('roomId');
+                  if(document.getElementById(roomId)){
+                      document.getElementById(roomId).innerText = "";
+                  }
+
+                  $.ajax({
+                      type: "GET",
+                      url: "/room/show",
+                      data: { "roomId": roomId },
+                      success: function(data){
+                          $('#msgList').empty();
+                          $('.chat-input-box').empty();
+                          values = data.chatList;
+
+                          if(data.user1 == sender){
+                              receiver = data.user2;
+                          }
+                          else{
+                              receiver = data.user1;
+                          }
+
+                          stomp.send('/pub/chat/enter', {}, JSON.stringify({
+                            chRoomId: roomId,
+                            senderName: "system",
+                            receiverName: sender,
+                            sendTime: new Date(),
+                            message: sender + "님이 입장하셨습니다.",
+                            checkRead: 0
+                          }));
+
+                          $.each(values, function(index, value){
+                              if (value.senderName == sender){
+                                $("#msgList").append("<div class='mychat'><span>"+ value.senderName + ": " + value.message + " " + sendMsgDate(value.sendTime) + "</span></div>");
+                              }
+                              else if(value.senderName == receiver){
+                                $("#msgList").append("<div class='notmychat'><span>"+ value.senderName + ": " + value.message + " " + sendMsgDate(value.sendTime) + "</span></div>");
+                              }
+                              else if(value.senderName == "system"){
+                                $("#msgList").append("<div class='syschat'><div>"+ value.senderName + ": " + value.message + "</div></div>");
+                              }
+                            });
+                            $('.chat-input-box').append("<input type='text' id='msg' class='form-control' />");
+                            $('.chat-input-box').append("<button id='send' class='btn btn-default'>전송</button>");
+                            $('.chat-input-box').append("<button id='exit' class='btn btn-default'>나가기</button>");
+
+                          $("#send").on("click", function(e){
+                              var msg = document.getElementById("msg");
+                              if(msg.value != ""){
+                                  var date = new Date();
+                                  var msgDate = sendMsgDate(date);
+                                  stomp.send('/pub/chat/message', {}, JSON.stringify({
+                                      chRoomId: roomId,
+                                      senderName: sender,
+                                      receiverName: receiver,
+                                      sendTime: date,
+                                      message: msg.value,
+                                      checkRead: 0
+                                  }));
+                              }
+                              else{
+                                  alert("메세지를 입력하세요.");
+                              }
+                              msg.value = "";
+                          });// $('#send').on('click', function(e){})끝
+
+                          $("#exit").on("click", function(e){
+                              if(!confirm("방을 나가시겠습니까?")){
+                                  event.preventDefault();
+                              }
+                              else{
+                                  stomp.send('/pub/chat/exit', {}, JSON.stringify({
+                                      chRoomId: roomId,
+                                      senderName: "system",
+                                      receiverName: receiver,
+                                      sendTime: new Date(),
+                                      message: sender + "님이 나가셨습니다.",
+                                      checkRead: 0
+                                  }));
+                                  $('#msgList').empty();
+                                  $('.chat-input-box').empty();
+
+                                  $.ajax({
+                                      type: "POST",
+                                      url: "/room/exit",
+                                      data: { "roomId": roomId },
+                                      success: function(data){
+                                          location.reload();
+                                      }
+                                  });
+                              } // else 절 끝
+                          }); // $('#exit').on('click', ) 끝
+                      } // success:(data){} 끝
+                  }) // $.ajax({}) 끝
+              }); // $('.chatList').on('click',) 끝
+          }) // stomp.connect() 끝
+      }
+
+      function sendMsgDate(msgDate){
+          var date;
+          var time = new Date(msgDate);
+
+          var year = time.getFullYear();
+          var month = time.getMonth() + 1;
+          var day = time.getDate();
+
+          var hours = time.getHours();
+          var minutes = time.getMinutes();
+
+          date = year + "-" + month + "-" + day + " " + hours + ":" + minutes;
+          return date;
+      }
+      function scrollBottom(){
+
+          const objDiv = document.querySelector(".msg_history");
+          objDiv.scrollTop = objDiv.scrollHeight;
+      }
+    </script>
+    <div th:replace="fragments/footer :: footer" />
+  </body>
+</html>

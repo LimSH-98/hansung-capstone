@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+
+<!-- toastr 스타일시트.-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css"
+      integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g=="
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
+        integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<head>
+  <title>도전경매</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+          href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
+          rel="stylesheet"
+  />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+          rel="stylesheet"
+          type="text/css"
+          href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"
+  />
+
+  <link rel="stylesheet" type="text/css" href="/css/main.css" />
+  <link rel="stylesheet" type="text/css" href="/css/common.css" />
+  <script
+          src="https://kit.fontawesome.com/20515282ae.js"
+          crossorigin="anonymous"
+  ></script>
+  <script
+          type="text/javascript"
+          src="//code.jquery.com/jquery-1.11.0.min.js"
+  ></script>
+  <script
+          type="text/javascript"
+          src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"
+  ></script>
+  <script>
+    $(document).ready(function () {
+      $(".slick-sample").slick({
+        autoplay: true,
+        autoplaySpeed: 3000,
+        prevArrow: $("#prevArrow"),
+        nextArrow: $("#nextArrow"),
+      });
+    });
+
+  </script>
+<body>
+<div class="container">
+  <div>
+    <div class="top-bar" style="border-bottom: solid 0.1em #fca863">
+      <div class="title">
+        <a href="/"><img
+                src="images/premium-icon-hammer-2547559.png"
+                id="iconimg"
+        />도전경매</a>
+      </div>
+
+      <div class="search-from">
+        <form action="/post/search" method="GET">
+          <input class="search-box" name="keyword" type="text" placeholder="내가 찾는 도서, 전자기기">
+          <button class="search-btn"><img src="/images/search.png"/></button>
+        </form>
+      </div>
+
+      <div class="nav-banner">
+        <a href="/posts/new"><img class="icon" src="images/contact-form.png"/>물품 등록</a>
+        <a href="/posts" id="posts"><img class="icon" src="images/list.png"/>물품 거래</a>
+        <div id="category-box" style="display: none">
+          <a href="/posts">전체 보기</a>
+          <a href="/post/searchCategory/book"><img class="icon" src="images/book.png"/>도서</a>
+          <a href="/post/searchCategory/studyMaterial"><img class="icon" src="images/document.png"/>학습자료</a>
+          <a href="/post/searchCategory/electronics"><img class="icon" src="images/tablet.png"/>전자기기</a>
+          <a href="/post/searchCategory/daily"><img class="icon" src="images/toilet-paper.png"/>생필품</a>
+        </div>
+        <a href="roomList"><img class="icon" src="images/chat.png"/>채팅 목록</a>
+      </div>
+      <div class="loginbox">
+        <a class="welcome" sec:authorize="isAuthenticated()">
+          <td th:text="|${session.nickname}님, 환영합니다.|"></td>
+        </a>
+        <a sec:authorize="isAnonymous()">
+          <a class="loginbox-btn" th:href="@{/login}">로그인</a>
+        </a>
+        <!-- 로그인 한 사용자면 로그아웃 버튼 보이게 -->
+        <a sec:authorize="isAuthenticated()">
+          <a class="loginbox-btn" th:href="@{/doLogout}">로그 아웃</a>
+        </a>
+        <a sec:authorize="isAnonymous()">
+          <a class="loginbox-btn" th:href="@{/members/new}">회원가입</a>
+        </a>
+        <a sec:authorize="isAuthenticated()">
+          <a class="loginbox-btn" href="/post/myPost">내 게시물</a>
+        </a>
+        <a sec:authorize="isAuthenticated()">
+          <a class="loginbox-btn" href="/post/myBidding">내가 입찰중인 게시글</a>
+        </a>
+        <a sec:authorize="isAuthenticated()">
+          <a class="loginbox-btn" href="/post/mySuccess">내가 낙찰+즉구한 게시글</a>
+        </a>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="slide">
+
+  <div class="slick-sample">
+    <img src="/images/slide1.png" />
+    <img src="/images/slide2.png" />
+    <img src="/images/slide3.png" />
+  </div>
+
+  <button type="button" aria-label="이전" id="prevArrow"></button>
+  <button type="button" aria-label="다음" id="nextArrow"></button>
+</div>
+
+
+<div class="top5-head">
+  ⭐️인기물품 top5⭐
+</div>
+<div class="top5">
+  <div class="product-box" th:each="board : ${boardList}">
+
+    <a href="#" th:href="@{/post/{id}/bid (id=${board.id})}">
+      <img class="product-img" th:src="'/postimages/'+${board.getFname()}" onerror="this.src='/images/noimage.png'"/>
+
+      <div class="product-info">
+              <span>
+                    <span>상품명 : </span
+                    ><span class="name" th:text="${board.productName}"></span>
+              </span>
+        <span>
+                    <span>조회수 : </span
+                    ><span class="view" th:text="${board.view}"></span>
+        </span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="fir_content">
+  <div class="l-fir_content">
+    <div class="l-fir_content-text">
+      <div><span class="large-text">도</span>서와</div>
+      <div><span class="large-text">전</span>자기기</div>
+    </div>
+    <img src="images/Camera.jpeg" />
+  </div>
+  <div class="r-fir_content">
+    <img src="images/Desk.jpeg" />
+    <div class="r-fir_content-text">
+      <div># 대학생 필수품</div>
+      <div>필수 경매 웹 사이트</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="sec_content">
+  <div>
+    <img class="l-sec_content-img" src="/images/pic1.png" />
+  </div>
+  <div class="r-sec_content">
+    <div class="r-sec_content-textbox">
+      <div class="r-sec_content-text1">둘 도 없는 중고 상품</div>
+      <div class="r-sec_content-text2">고민하지 말고 바로 구매 하세요</div>
+      <div class="r-sec_content-text3">Enjoy your purchase</div>
+    </div>
+    <div class="r-sec_content-textbox">
+      <div class="r-sec_content-text1">학생과 학생의 거래</div>
+      <div class="r-sec_content-text2">도전 경매로 안전 경매 도전!</div>
+    </div>
+    <div>
+      <img class="r-sec_content-img" src="/images/pic2.png" />
+    </div>
+  </div>
+</div>
+<div class="m-nav-banner">
+  <img src="/images/slide3.png" style="width: 100%; height: auto; margin-bottom: 30px;"/>
+  <div><a href="/posts/new">물품 등록</a></div>
+  <div><a href="/posts">물품 거래</a></div>
+  <div><a href="roomList">채팅 목록</a></div>
+</div>
+<a href="#" class="btn_gotop">
+  <span class="glyphicon glyphicon-chevron-up">
+    <div>&nbsp;^&nbsp;</div><div>Top</div>
+  </span>
+</a>
+<div th:replace="fragments/footer :: footer" />
+</body>
+
+<script th:inline="javascript">
+
+  toastr.options = {
+			  "closeButton": false,
+			  "debug": false,
+			  "newestOnTop": false,
+			  "progressBar": true,
+			  "positionClass": "toast-top-right",
+			  "preventDuplicates": false,
+			  "onclick": null,
+			  "showDuration": "100",
+			  "hideDuration": "1000",
+			  "timeOut": "10000",
+			  "extendedTimeOut": "3000",
+			  "showEasing": "swing",
+			  "hideEasing": "linear",
+			  "showMethod": "fadeIn",
+			  "hideMethod": "fadeOut"
+			}
+
+  const posts = document.getElementById('posts');
+  const category = document.getElementById('category-box');
+  const name = [[${session.nickname}]];
+
+  posts.addEventListener('mouseover',function(){
+    category.style.display = 'flex';
+    posts.style.background = 'rgb(230, 230, 230)';
+  });
+  category.addEventListener('mouseover',function(){
+    category.style.display = 'flex';
+    posts.style.background = 'rgb(230, 230, 230)';
+  });
+
+  posts.addEventListener('mouseout',function(){
+    category.style.display = 'none';
+    posts.style.background = 'white';
+  });
+  category.addEventListener('mouseout',function(){
+    category.style.display = 'none';
+    posts.style.background = 'white';
+  });
+
+  if([[${session.id}]] != null){
+    var socket = new SockJS("/stomp/chat");
+    var stomp = Stomp.over(socket);
+
+    stomp.connect({}, function(){
+      console.log("server connected... ");
+      stomp.subscribe("/sub/chat/room", function(chat){
+        var content = JSON.parse(chat.body);
+         if(content.chRoomId == '마감'){
+          msg2 = content.message.split(" ");
+          if([[${session.id}]] == parseInt(msg2[1])){
+            toastr.info(content.senderName + "님의 " + content.receiverName + " 입찰을 종료했습니다.");
+          }
+         }
+         else if(content.chRoomId == '입찰'){
+            msg2 = content.message.split(" ");
+            if([[${session.id}]] == parseInt(msg2[3])){
+              toastr.info(content.senderName + "님이 " + content.receiverName + "에 입찰하였습니다.");
+            }
+         }
+         else if(content.chRoomId == '낙찰'){
+            msg2 = content.message.split(" ");
+            if([[${session.id}]] == parseInt(msg2[3])){
+              toastr.info(content.senderName + "님이 " + content.receiverName + "을 낙찰하였습니다. <br> 채팅방을 확인하세요");
+            }
+         }
+         else if(content.chRoomId == '즉구'){
+            msg2 = content.message.split(" ");
+            if([[${session.id}]] == parseInt(msg2[3])){
+              toastr.info(content.senderName + "님이 " + content.receiverName + "을 즉시 구매 하였습니다. <br> 채팅방을 확인하세요");
+            }
+         }
+         else{
+            if([[${session.nickname}]] == content.receiverName){
+              toastr.info("새 메시지가 도착했습니다.<br>" + content.senderName + ": " + content.message);
+            }
+         }
+      });
+    });
+  }
+
+  $(window).scroll(function(){
+    if ($(this).scrollTop() > 300){
+      $('.btn_gotop').show();
+    } else{
+      $('.btn_gotop').hide();
+    }
+  });
+  $('.btn_gotop').click(function(){
+    $('html, body').animate({scrollTop:0},400);
+    return false;
+  });
+
+</script>
+</html>

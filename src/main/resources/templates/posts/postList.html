@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html
+        lang="en"
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.w3.org/1999/xhtml"
+>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+          href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
+          rel="stylesheet"
+  />
+  <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script src="/webjars/jquery/jquery.min.js"></script>
+  <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>도전경매 - 경매리스트</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+  <link rel="stylesheet" type="text/css" href="/css/common.css" />
+  <link rel="stylesheet" type="text/css" href="/css/postList.css" />
+  <!-- toastr 메시지 스타일, toastr  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css"
+        integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
+          integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<div th:replace="fragments/bodyHeader :: bodyHeader" />
+<div class="top-box">
+  <div class="nav-banner">
+    <a href="/posts">전체 보기</a>
+    <a href="/post/searchCategory/book"
+    ><img class="icon" src="/images/book.png" />도서</a
+    >
+    <a href="/post/searchCategory/studyMaterial"
+    ><img class="icon" src="/images/document.png" />학습자료</a
+    >
+    <a href="/post/searchCategory/electronics"
+    ><img class="icon" src="/images/tablet.png" />전자기기</a
+    >
+    <a href="/post/searchCategory/daily"
+    ><img class="icon" src="/images/toilet-paper.png" />생필품</a
+    >
+  </div>
+  <div class="search-form">
+    <form action="/post/CategoryKeywordSearch" method="GET">
+      <select id="sel-category" name="category">
+        <option value="all">전체</option>
+        <option value="book">책</option>
+        <option value="studyMaterial">학습자료</option>
+        <option value="electronics">전자기기</option>
+        <option value="daily">생필품</option>
+      </select>
+      <input
+              class="search-box"
+              name="keyword"
+              type="text"
+              placeholder="내가 찾는 도서, 전자기기"
+      />
+      <input type="submit" class="search-btn" value="검색" />
+    </form>
+  </div>
+</div>
+<div class="container">
+  <div class="product-list">
+    <div class="product-box" th:each="board : ${boardList}">
+      <a href="#" th:if="${board.status != '입찰 중'}"  th:href="@{/post/{id}/bid (id=${board.id})}">
+        <div class="imgbox">
+          <img class="product-img" style="-webkit-filter: grayscale(100%); filter:gray;" th:src="'/postimages/'+${board.getFname()}" onerror="this.src='/images/noimage.png'"/>
+        </div>
+        <div class="product-info saled" style=" background-color:#e6e6e6">
+          <div>
+            <span class="p-title" th:text="${board.title}"></span>
+          </div>
+          <div>
+                <span>현재가 : </span
+                ><span class="currentBid" th:text="${board.currentBid}"></span>
+          </div>
+          <div>
+                <span>즉시구매가 : </span
+                ><span class="winningBid" th:text="${board.winningBid}"></span>
+          </div>
+          <div>
+            <span>등록 : </span>
+            <span class="regisTime"
+                  th:text="${#dates.format(board.regisTime.getTime(), 'MM/dd HH:mm')}"
+            ></span>
+          </div>
+          <div>
+                <span>마감 : </span
+                ><span
+                  th:text="${#dates.format(board.regisTime.getTime(), 'MM/dd HH:mm')}"
+          ></span>
+          </div>
+          <img id="saled" src="/images/saled.png"/>
+        </div>
+      </a>
+      <a href="#" th:if="${board.status == '입찰 중'}" th:href="@{/post/{id}/bid (id=${board.id})}">
+        <div style="border: solid 0.5px; display: flex; justify-content: center; ">
+          <img class="product-img" th:src="'/postimages/'+${board.getFname()}" onerror="this.src='/images/noimage.png'"/>
+        </div>
+        <div class="product-info">
+          <div>
+            <span class="p-title" th:text="${board.title}"></span>
+          </div>
+          <div>
+                <span>현재가 : </span
+                ><span class="currentBid" th:text="${board.currentBid}"></span>
+          </div>
+          <div>
+                <span>즉시 구매가 : </span>
+                <span class="winningBid" th:text="${board.winningBid}"></span>
+          </div>
+          <div>
+                <span>등록 : </span>
+            <span class="regisTime"
+                  th:text="${#dates.format(board.regisTime.getTime(), 'MM/dd HH:mm')}"
+            ></span>
+          </div>
+          <div>
+                <span id="${board.id}">마감 : </span>
+            <span
+                  th:text="${#dates.format(board.regisTime.getTime() + board.auctionPeriod * 1000 * 60 * 60, 'MM/dd HH:mm')}"
+          ></span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+<nav class="nav-box" aria-label="Page navigation example ">
+  <ul style="border : solid 2px; border-color: #fca863"  class="pagination">
+    <li class="page-item">
+      <a href="javascript:void(0);"
+         class="page-link"
+         th:onclick="goUrl([[${link}]],[[${second}]],[[1]])"
+         aria-label="Previous"
+      >
+        <span aria-hidden="true">처음</span>
+      </a>
+    </li>
+    <li class="page-item">
+      <a href="javascript:void(0);"
+              class="page-link"
+              th:onclick="goUrl([[${link}]],[[${second}]],[[${pagination.prevBlock}]])"
+              aria-label="Previous"
+      >
+        <span aria-hidden="true">이전</span>
+      </a>
+    </li>
+    <th:block
+            th:with="start = ${pagination.startPage}, end = ${pagination.endPage}"
+    >
+      <li
+              class="page-item"
+              th:with="start = ${pagination.startPage}, end = ${pagination.endPage}"
+              th:each="pageButton : ${#numbers.sequence(start, end)}"
+      >
+        <a href="javascript:void(0);"
+                class="page-link"
+                th:onclick="goUrl([[${link}]],[[${second}]],[[${pageButton}]])"
+                th:text="${pageButton}"
+        ></a>
+      </li>
+    </th:block>
+    <li class="page-item">
+      <a href="javascript:void(0);"
+              class="page-link"
+              th:onclick="goUrl([[${link}]],[[${second}]],[[${pagination.nextBlock}]])"
+              aria-label="Next"
+      >
+        <span aria-hidden="true">다음</span>
+      </a>
+    </li>
+    <li class="page-item">
+      <a href="javascript:void(0);"
+              class="page-link"
+              th:onclick="goUrl([[${link}]],[[${second}]],[[${pagination.totalPageCnt}]])"
+              aria-label="Previous"
+      >
+        <span aria-hidden="true">끝</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+<div th:replace="fragments/footer :: footer" />
+</body>
+<script th:inline="javascript">
+
+  const id = [[${session.id}]];
+  const name = [[${session.nickname}]];
+
+  function goUrl(link,second,pageButton){
+    console.log(link);
+    location.href = "/"+link+""+decodeURIComponent(second)+"page="+pageButton;
+  }
+
+  $('input[type=radio][name=order]').change(function() {
+      console.log($("input[name='order']:checked").val());
+      var order = $("input[name='order']:checked").val();
+      location.href="/posts?order="+ order;
+  });
+
+  toastr.options = {
+	          "closeButton": false,
+			  "debug": false,
+			  "newestOnTop": false,
+			  "progressBar": true,
+			  "positionClass": "toast-top-right",
+			  "preventDuplicates": false,
+			  "onclick": null,
+			  "showDuration": "100",
+			  "hideDuration": "1000",
+			  "timeOut": "10000",
+			  "extendedTimeOut": "1000",
+			  "showEasing": "swing",
+			  "hideEasing": "linear",
+			  "showMethod": "fadeIn",
+			  "hideMethod": "fadeOut"
+     }
+
+  if(id != null){
+    var socket = new SockJS("/stomp/chat");
+    var stomp = Stomp.over(socket);
+    stomp.connect({}, function(){
+      console.log("server connected...");
+
+      stomp.subscribe("/sub/chat/room", function(chat){
+
+        var content = JSON.parse(chat.body);
+        msg = content.message.split(" ");
+        // content.message 를 split(" ") 하면
+        // msg[1]: 입찰한 유저 id
+        // msg[3]: 이벤트 발생한 게시물 올린 유저 id
+        // msg[5]: 이벤트 발생한 게시물 id
+        if(content.chRoomId == '입찰'){
+          if(id == parseInt(msg[3])){
+            toastr.info(content.senderName + "님이 " + content.receiverName + " 입찰에 참가했습니다.");
+          }
+        }
+        else if(content.chRoomId == '낙찰'){
+          if(id == parseInt(msg[3])){
+            toastr.info(content.receiverName + "이(가) " + content.senderName + "님에게 낙찰되었습니다. <br> 채팅방을 확인하세요" );
+          }
+          // 낙찰된 상품을 마감된 상품 처리: 이미지, 상태,
+        }
+        else if(content.chRoomId == '즉구'){
+          if(id == parseInt(msg[3])){
+            toastr.success(content.receiverName + "이(가) " + content.senderName + "님에게 구매되었습니다. <br> 채팅방을 확인하세요");
+          }
+          // 구매된 상품을 마감된 상품 처리: 이미지, 상태,
+        }
+        else if(content.chRoomId == '마감'){
+          if(id == parseInt(msg[1])){
+            toastr.success(content.receiverName + "이(가) 낙찰되었습니다. <br> 채팅방을 확인하세요");
+          }
+          // 마감된 상품으로 처리: 이미지, 상태 -> 어차피 이 페이지에서는 아무것도 못하니깐 처리말고 새로고침하라고 메시지?
+        }
+        else{ // 채팅 메시지
+          if([[${session.nickname}]] == content.receiverName){
+            toastr.info("새 메시지가 도착했습니다.<br>" + content.senderName + ": " + content.message);
+          }
+        }
+      })
+    })
+  }
+</script>
+</html>

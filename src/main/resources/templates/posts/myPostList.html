@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>도전경매 - 내 게시글 모음</title>
+    <meta charset="UTF-8">
+    <title>paging</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/postList.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
+            rel="stylesheet"
+    />
+</head>
+<body>
+<div th:replace="fragments/bodyHeader :: bodyHeader" />
+<div style="border-bottom: solid 1px black; padding: 10px; font-size: 20px">
+
+</div>
+<div class="container">
+    <div class="product-list">
+        <div class="product-box" th:each="board : ${boardList}">
+            <a href="#" th:if="${board.status != '입찰 중'}"  th:href="@{/post/{id}/bid (id=${board.id})}">
+                <div style="display: flex; justify-content: center;">
+                    <img class="product-img" style="-webkit-filter: grayscale(100%); filter:gray;" th:src="'/postimages/'+${board.getFname()}" onerror="this.src='/images/noimage.png'"/>
+                </div>
+                <div class="product-info saled" style=" background-color:#e6e6e6">
+                    <div>
+                        <span class="p-title" th:text="${board.title}"></span>
+                    </div>
+                    <div>
+                <span>상품명 : </span
+                ><span class="name" th:text="${board.productName}"></span>
+                    </div>
+                    <div>
+                <span>현재가 : </span
+                ><span class="currentBid" th:text="${board.currentBid}"></span>
+                    </div>
+                    <div>
+                <span>즉시구매가 : </span
+                ><span class="winningBid" th:text="${board.winningBid}"></span>
+                    </div>
+                    <div>
+                <span>상태 : </span
+                ><span class="status" th:text="${board.status}"></span>
+                    </div>
+                    <div>
+                <span>마감기한 : </span
+                ><span
+                            th:text="${#dates.format(board.regisTime.getTime() + board.auctionPeriod * 1000 * 60 * 60, 'MM/dd HH:mm')}"
+                    ></span>
+                    </div>
+                    <div>
+                <span>조회수 : </span
+                ><span class="view" th:text="${board.view}"></span>
+                    </div>
+                    <img id="saled" src="/images/saled.png"/>
+                </div>
+            </a>
+            <a href="#" th:if="${board.status == '입찰 중'}" th:href="@{/post/{id}/bid (id=${board.id})}">
+                <div style="display: flex; justify-content: center; ">
+                    <img class="product-img" th:src="'/postimages/'+${board.getFname()}" onerror="this.src='/images/noimage.png'"/>
+                </div>
+                <div class="product-info">
+                    <div>
+                        <span class="p-title" th:text="${board.title}"></span>
+                    </div>
+                    <div>
+                <span>상품명 : </span
+                ><span class="name" th:text="${board.productName}"></span>
+                    </div>
+                    <div>
+                <span>현재가 : </span
+                ><span class="currentBid" th:text="${board.currentBid}"></span>
+                    </div>
+                    <div>
+                <span>즉시구매가 : </span
+                ><span class="winningBid" th:text="${board.winningBid}"></span>
+                    </div>
+                    <div>
+                <span>상태 : </span
+                ><span class="status" th:text="${board.status}"></span>
+                    </div>
+                    <div>
+                <span>마감기한 : </span
+                ><span
+                            th:text="${#dates.format(board.regisTime.getTime() + board.auctionPeriod * 1000 * 60 * 60, 'MM/dd HH:mm')}"
+                    ></span>
+                    </div>
+                    <div>
+                <span>조회수 : </span
+                ><span class="view" th:text="${board.view}"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<div th:replace="fragments/footer :: footer" />
+</body>
+</html>
+
